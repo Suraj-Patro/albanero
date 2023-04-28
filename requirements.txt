@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+pyspark
+python-Levenshtein
+fuzzywuzzy
