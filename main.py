@@ -44,9 +44,34 @@ def rename_duplicate_columns(dataframe):
     return dataframe
 
 
-def calculate_fuzz_ratio( columns ):
-    col_dup = [ f"{c}_2" for c in columns ]
-    return fuzz.ratio(columns, col_dup)
+def calculate_fuzz_ratio( sel_col, val1, val2 ):
+    columns = [
+        "first_name",
+        "last_name",
+        "gender",
+        "date_of_birth",
+        "address",
+        "city",
+        "state",
+        "country",
+        "email",
+        "phone"
+    ]
+
+    columns_selection = [ [i, 1] if i in set(sel_col) else [i, 0] for i in columns ]
+
+    sel_val1 = []
+    sel_val2 = []
+
+    for i in range( len(columns_selection) ):
+        if columns_selection[i][1] == 1:
+            sel_val1.append( val1[i] )
+
+    for i in range( len(columns_selection) ):
+        if columns_selection[i][1] == 1:
+            sel_val2.append( val2[i] )
+
+    return fuzz.ratio(sel_val1, sel_val2)
 
 
 
@@ -64,7 +89,9 @@ async def check(file_path, columns):
     joined = rename_duplicate_columns(joined)
 
     sch = ['group_no', 'row_no', 'match_%']
-    joined = joined.rdd.map(lambda x: (x.row_num, x.row_num_2, calculate_fuzz_ratio( columns ))).toDF(sch)
+    joined = joined.rdd.map(lambda x: (x.row_num, x.row_num_2,
+    calculate_fuzz_ratio(columns, [ x.first_name, x.last_name, x.gender, x.date_of_birth, x.address, x.city, x.state, x.country, x.email, x.phone ], \
+                    [ x.first_name_2, x.last_name_2, x.gender_2, x.date_of_birth_2, x.address_2, x.city_2, x.state_2, x.country_2, x.email_2, x.phone_2 ] ))).toDF(sch)
 
 
     joined = joined.where(joined['match_%'] >= 80)
@@ -80,9 +107,11 @@ async def check(file_path, columns):
 
     df = joined.join(df, joined.row_no == df.row_num, "inner")
 
-    df = df.select( F.row_number().over( Window.partitionBy( df['group_no'] ).orderBy( df['row_no'] ) ).alias( "row_num" ), \
-                   "match_%", \
-                    "first_name", "last_name", "gender", "address", "city", "state", "country", "email", "phone")
+    # df = df.select( F.row_number().over( Window.partitionBy( df['group_no'] ).orderBy( df['row_no'] ) ).alias( "row_num" ), \
+    #                "match_%", \
+    #                 "first_name", "last_name", "gender", "address", "city", "state", "country", "email", "phone")
+
+    df = df.select( "group_no", "first_name", "last_name", "gender", "address", "city", "state", "country", "email", "phone")
 
     ###################################################################################################
 
