@@ -418,7 +418,7 @@ easy to create iterators with no more effort than writing a regular function.
     - automatic method creation
     - saving program state
     - when generators terminate, they automatically raise StopIteration
-\
+
 
 # Generator Expressions
 
