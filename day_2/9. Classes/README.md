@@ -451,3 +451,184 @@ valedictorian = max( (student.gpa, student.name) for student in graduates )
 data = 'golf'
 list( data[i] for i in range( len(data) - 1, -1, -1 ) )
 ['f', 'l', 'o', 'g']
+
+
+===============================================================================
+
+# https://www.geeksforgeeks.org/abstract-base-class-abc-in-python/
+# https://geekpython.in/abc-in-python
+# https://www.geeksforgeeks.org/getter-and-setter-in-python/
+
+
+from abc import ABC, ABCMeta, abstractclassmethod, abstractmethod, abstractstaticmethod, abstractproperty
+
+class A:
+    v = 10
+    def __init__(self) -> None:
+        pass
+
+    @classmethod
+    def a(cls):
+        print(cls)
+        print(type(cls))
+        print(cls.v)
+        print(type(cls.v))
+        print("class method")
+    
+    def b(self):
+        print("method")
+    
+    @staticmethod
+    def c():
+        print("static method")
+
+a = A()
+
+# inheritance
+
+class B(A):
+    pass
+
+b = B()
+
+# ABC
+class C(ABC):
+    v = 10
+    def __init__(self) -> None:
+        pass
+
+    @classmethod
+    def a(cls):
+        print(cls)
+        print(type(cls))
+        print(cls.v)
+        print(type(cls.v))
+        print("class method")
+    
+    def b(self):
+        print("method")
+    
+    @staticmethod
+    def c():
+        print("static method")
+
+    @abstractclassmethod
+    def d(cls):
+        pass
+
+    @abstractmethod
+    def e(self):
+        pass
+
+    @abstractstaticmethod
+    def f():
+        pass
+    
+    @abstractproperty
+    def fname(self):
+        return self.__fname
+    
+    @abstractproperty
+    def lname(self):
+        return self.__lname
+
+# c = C()
+
+class D(C):
+    @classmethod
+    def d(cls):
+        pass
+    
+    def e(self):
+        pass
+
+    @staticmethod
+    def f():
+        pass
+
+    def __init__(self):
+        self.__fname = "Suraj"
+        self.__lname = "Patro"
+
+    @property
+    def fname(self):
+        # return super().fname
+        return self.__fname
+    
+    @property
+    def lname(self):
+        # return super().lname
+        return self.__lname
+    
+d = D()
+
+# Getter & Setter
+# use of property() function
+
+# Method 1
+
+class E:
+	def __init__(self):
+		self._v = 0
+
+	def get_v(self):
+		print("getter")
+		return self._v
+
+	def set_v(self, a):
+		print("setter")
+		self._v = a
+
+	def del_v(self):
+		del self._v
+	
+	v = property(get_v, set_v, del_v)
+
+e = E()
+
+e.v = 10
+print(e.v)
+
+del e.v
+# print(e.v)
+
+e.v = 1
+print(e.v)
+
+
+
+# Method 2
+# Python program showing the use of
+# @property
+
+class F:
+	def __init__(self):
+		self._v = 0
+	
+	# using property decorator
+	# a getter function
+	@property
+	def v(self):
+		print("getter")
+		return self._v
+	
+	# a setter function
+	@v.setter
+	def v(self, a):
+		if(a < 20):
+			raise ValueError("Sorry you value is below eligibility criteria")
+		print("setter")
+		self._v = a
+
+f = F()
+
+# f.v = 19
+
+f.v = 21
+print(f.v)
+
+# del f.v
+# print(f.v)
+
+f.v = 23
+print(f.v)
