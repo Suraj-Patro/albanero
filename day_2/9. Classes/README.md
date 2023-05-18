@@ -453,6 +453,15 @@ list( data[i] for i in range( len(data) - 1, -1, -1 ) )
 ['f', 'l', 'o', 'g']
 
 
+def sequence():
+    num = 0
+    while True:
+        yield num
+        num += 1
+
+for i in sequence():
+    print(i, end=" ")
+
 ===============================================================================
 
 # https://www.geeksforgeeks.org/abstract-base-class-abc-in-python/
@@ -463,103 +472,126 @@ list( data[i] for i in range( len(data) - 1, -1, -1 ) )
 from abc import ABC, ABCMeta, abstractclassmethod, abstractmethod, abstractstaticmethod, abstractproperty
 
 class A:
-    v = 10
-    def __init__(self) -> None:
-        pass
+	v = 10
+	def __init__(self) -> None:
+		pass
 
-    @classmethod
-    def a(cls):
-        print(cls)
-        print(type(cls))
-        print(cls.v)
-        print(type(cls.v))
-        print("class method")
-    
-    def b(self):
-        print("method")
-    
-    @staticmethod
-    def c():
-        print("static method")
+	@classmethod
+	def a(cls):
+		print(cls)
+		print(type(cls))
+		print(cls.v)
+		print(type(cls.v))
+		print("class method")
+	
+	def b(self):
+		print("method")
+	
+	@staticmethod
+	def c():
+		print("static method")
 
 a = A()
 
 # inheritance
 
 class B(A):
-    pass
+	pass
 
 b = B()
 
 # ABC
 class C(ABC):
-    v = 10
-    def __init__(self) -> None:
-        pass
+	def __init__(self) -> None:
+		pass
 
-    @classmethod
-    def a(cls):
-        print(cls)
-        print(type(cls))
-        print(cls.v)
-        print(type(cls.v))
-        print("class method")
-    
-    def b(self):
-        print("method")
-    
-    @staticmethod
-    def c():
-        print("static method")
+	@classmethod
+	def a(cls):
+		print(cls)
+		print(type(cls))
+		print(cls.v)
+		print(type(cls.v))
+		print("class method")
+	
+	def b(self):
+		print("method")
+	
+	@staticmethod
+	def c():
+		print("static method")
 
-    @abstractclassmethod
-    def d(cls):
-        pass
+	@abstractclassmethod
+	def d(cls):
+		pass
 
-    @abstractmethod
-    def e(self):
-        pass
+	@abstractmethod
+	def e(self):
+		pass
 
-    @abstractstaticmethod
-    def f():
-        pass
-    
-    @abstractproperty
-    def fname(self):
-        return self.__fname
-    
-    @abstractproperty
-    def lname(self):
-        return self.__lname
-
+	@abstractstaticmethod
+	def f():
+		pass
+	
+	@abstractproperty
+	def fname(self):
+		return self.__fname
+	
+	@abstractproperty
+	def lname(self):
+		return self.__lname
+	
+	@property
+	@abstractmethod
+	def instance_v(self):
+		return self.__instance_v
+	
+	@property
+	@abstractclassmethod
+	def class_v(cls):
+		pass
+	
 # c = C()
 
 class D(C):
-    @classmethod
-    def d(cls):
-        pass
-    
-    def e(self):
-        pass
+	@classmethod
+	def d(cls):
+		pass
+	
+	def e(self):
+		pass
 
-    @staticmethod
-    def f():
-        pass
+	# def e(self, a):
+	#     pass
 
-    def __init__(self):
-        self.__fname = "Suraj"
-        self.__lname = "Patro"
+	@staticmethod
+	def f():
+		pass
 
-    @property
-    def fname(self):
-        # return super().fname
-        return self.__fname
-    
-    @property
-    def lname(self):
-        # return super().lname
-        return self.__lname
-    
+	def __init__(self):
+		self.__fname = "Suraj"
+		self.__lname = "Patro"
+		self.__instance_v = 10
+
+	@property
+	def fname(self):
+		# return super().fname
+		return self.__fname
+	
+	@property
+	def lname(self):
+		# return super().lname
+		return self.__lname
+	
+	@property
+	def instance_v(self):
+		return self.__instance_v
+	
+	__class_v = 10
+
+	@property
+	def class_v(cls):
+		return cls.__class_v
+
 d = D()
 
 # Getter & Setter
@@ -632,3 +664,36 @@ print(f.v)
 
 f.v = 23
 print(f.v)
+
+
+class G(F):
+	# def __init__(self):
+	# 	self._v = 0
+	
+	# using property decorator
+	# a getter function
+	@property
+	def v(self):
+		print("getter")
+		if self._v > 60:
+			return self._v
+		else:
+			return 0
+	
+	# a setter function
+	@v.setter
+	def v(self, a):
+		if(a < 50):
+			raise ValueError("Sorry you value is below eligibility criteria")
+		print("setter")
+		self._v = a
+
+g = G()
+
+# g.v = 49
+
+g.v = 51
+print(g.v)
+
+g.v = 61
+print(g.v)
