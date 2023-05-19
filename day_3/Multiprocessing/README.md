@@ -352,3 +352,6 @@ if __name__ == '__main__':
 
     # exiting the 'with'-block has stopped the pool
     print("Now the pool is closed and no longer available")
+
+
+https://cuyu.github.io/python/2016/08/15/Terminate-multiprocess-in-Python-correctly-and-gracefully

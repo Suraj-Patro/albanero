@@ -306,3 +306,6 @@ exitFlag = 1
 for t in threads:
    t.join()
 print "Exiting Main Thread"
+
+
+https://cuyu.github.io/python/2016/08/15/Terminate-multiprocess-in-Python-correctly-and-gracefully
