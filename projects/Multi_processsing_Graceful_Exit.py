@@ -5,7 +5,7 @@ import signal
 import weakref
 import traceback
 import multiprocessing
-from projects.Logger.logger import get_logger
+from Logger.logger import get_logger
 
 
 LOGGER = get_logger()
@@ -15,7 +15,7 @@ def error():
     raise Exception(f"Exception in PID: {os.getpid()}" )
 
 
-def run():
+def run(n):
     if os.getpid() % 2 == 0:
         try:
             error()
@@ -24,14 +24,14 @@ def run():
             LOGGER.error(e)
         return
     else:
-        while True:        
+        for i in range(n):        
             LOGGER.info(f"PID: {os.getpid()} \t Running...")
             time.sleep(10)
 
 
 def main():
     for i in range(5):
-        p = multiprocessing.Process(target = run)
+        p = multiprocessing.Process(target = run, args=(5-1,))
         cache[i] = p
         cache[i].start()
 

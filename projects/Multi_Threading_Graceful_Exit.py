@@ -5,7 +5,7 @@ import signal
 import weakref
 import traceback
 import threading
-from projects.Logger.logger import get_logger
+from Logger.logger import get_logger
 
 
 LOGGER = get_logger()
