@@ -11,3 +11,19 @@ LOGGER.warning("warning message")
 LOGGER.error("error message")
 LOGGER.critical("critical message")
 
+
+
+import sys
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    LOGGER.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+sys.excepthook = handle_exception
+
+if __name__ == "__main__":
+    raise RuntimeError("Test unhandled")
+
