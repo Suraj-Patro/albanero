@@ -38,5 +38,6 @@ In short, marshmallow schemas can be used to:
 
     Deserialize input data to app-level objects.
 
-    Serialize app-level objects to primitive Python types. The serialized objects can then be rendered to standard formats such as JSON for use in an HTTP API
+    Serialize app-level objects to primitive Python types
+    serialized objects can then be rendered to standard formats such as JSON for use in an HTTP API
 
