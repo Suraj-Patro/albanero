@@ -8,3 +8,5 @@ uncaught exceptions
 sys.excepthook
 
 dataclasses-json
+
+dataclass-wizard
