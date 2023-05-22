@@ -14,7 +14,7 @@ def work(LOGGER):
 
 
 def f(LOGGER):
-    # raise Exception("worker exception")
+    raise Exception("worker exception")
     if os.getpid() % 2 == 0:
         return error()
     else:

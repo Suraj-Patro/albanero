@@ -1,3 +1,4 @@
+import gc
 import os
 import sys
 import time
@@ -5,7 +6,7 @@ import signal
 import weakref
 import traceback
 import multiprocessing
-from Logger.logger import get_logger
+from logger import get_logger
 
 from graceful_exit_worker import f, error
 
@@ -26,6 +27,7 @@ class Handler:
 
         if os.getpid() == main_pid:
             self.logger.info(f"Graceful Exiting Signal Main PID: {os.getpid()}")
+            gc.collect()
             for p in cache.values():
                 self.logger.info(f"Child Process with PID: { p.pid }")
                 p.terminate()
@@ -44,6 +46,7 @@ class Handler:
 
         if os.getpid() == main_pid:
             self.logger.info(f"Graceful Exiting Exception Main PID: {os.getpid()}")
+            gc.collect()
             for p in cache.values():
                 self.logger.info(f"Child Process E with PID: { p.pid }")
                 p.terminate()
@@ -66,17 +69,12 @@ class Handler:
 
 def run():
     # can be a contect manager or also a normal assignment as well
-    # with Handler():
-    #     try:
-    #         f(LOGGER)
-    #     except Exception:
-    #         sys.excepthook(*sys.exc_info())
+    with Handler():
+        try:
+            f(LOGGER)
+        except Exception:
+            sys.excepthook(*sys.exc_info())
         # f(LOGGER)
-    Handler()
-    try:
-        f(LOGGER)
-    except Exception:
-        sys.excepthook(*sys.exc_info())
     return
 
 
