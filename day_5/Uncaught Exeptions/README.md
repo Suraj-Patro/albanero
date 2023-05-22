@@ -1,5 +1,5 @@
 Handling uncaught exception
-
+https://stackoverflow.com/questions/47815850/python-sys-excepthook-on-multiprocess
 
 
 import sys

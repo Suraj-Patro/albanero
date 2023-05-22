@@ -2,6 +2,7 @@ Signals
 Interupts
 
 https://chadrick-kwag.net/python-interrupt-sigterm-sigkill-exception-handling-experiments/
+https://medium.com/@cziegler_99189/gracefully-shutting-down-async-multiprocesses-in-python-2223be384510
 
 
 # Interrupt
