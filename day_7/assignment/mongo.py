@@ -69,3 +69,13 @@ cursor = postsC.find()
 for record in cursor:
     print(record)
 
+# postsC.aggregate( [ { "$match": { "type": "new" } }, { "$group": { student_id: "student_id", total: {"$sum": "$course_fee" }}} ])
+# Single monolith aggregation
+cursor = postsC.aggregate( [ { "$match": { "type": "new" } } ] )
+
+for record in cursor:
+    print(record)
+
+
+# Store a big aggregate intermediate result to be used later without recompute into a seperate document
+postsC.aggregate( [ { "$match": { "type": "new" } }, { "$out" : "stage_1" } ] )

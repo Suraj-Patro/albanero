@@ -35,3 +35,6 @@ Collections and databases are created
     when the first document is inserted into them
 
 
+Aggregation Pipeline
+https://www.mongodb.com/basics#aggregation-pipelines
+https://www.mongodb.com/basics/aggregation-pipeline
