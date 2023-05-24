@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from model import UsersModel
 from db import db_create_user, db_list_users, db_retrieve_user, db_update_user, db_delete_user, db_list_user_tasks
+from werkzeug.security import generate_password_hash
 
 
 users = Blueprint('users', __name__)
@@ -14,6 +15,9 @@ def create_user():
     payload = request.get_json()
     if "id" in payload:    # user cannot pass id when creating a new user
         payload.pop("id")
+    
+    payload["password"] = generate_password_hash(payload.get("password", ""), method='sha256')
+    
     status = UsersModel.Schema().validate(payload, partial=("id",))   # no validation to id
     if status:
         return jsonify(status), 400
@@ -35,7 +39,7 @@ def list_user():
 @users.route("/tasks", methods=["GET"])
 def list_user_tasks():
     """"
-    Retrieve a user all tasks
+    Retrieve a user's all tasks
     """
     user_id = request.args.get("id")
 
@@ -66,6 +70,8 @@ def update_user():
     Update a user
     """
     payload = request.get_json()
+    
+    payload["password"] = generate_password_hash(payload.get("password", ""), method='sha256')
     
     status = UsersModel.Schema().validate(payload)
     if status:

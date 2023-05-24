@@ -2,11 +2,13 @@ import pymongo
 from model import *
 from typing import List, Dict, Any
 
+
 client = pymongo.MongoClient("mongodb://localhost:27017/")
 Db = client["jira"]
 CUsers = Db['users']
 CTasks = Db['tasks']
 CComments = Db['comments']
+
 
 # Users
 def db_create_user(user: UsersModel) -> bool:

@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from model import CommentsModel
-from db import db_retrieve_user, db_retrieve_task, \
+from db import db_retrieve_user, \
+    db_retrieve_task, \
 db_create_comment, db_list_comments, db_retrieve_comment, db_update_comment, db_delete_comment
 from util import mail
 
@@ -32,17 +33,18 @@ def create_comment():
 
     _task = db_retrieve_task( payload.get("task") )
     
-    if payload.get("user") != _task.to_dict().get("assignee"):
-        mail(f"{db_retrieve_user(_task.to_dict().get('assignee')).to_dict().get('email')}",
-             f"New Comment { payload.get('message')[:5] } ... by { db_retrieve_user(payload.get('user')).to_dict().get('name') }",
-             f"New Comment by { db_retrieve_user(payload.get('user')).to_dict().get('name') } Details: { payload.get('message') }")
+    recipient = ""
 
+    if payload.get("user") != _task.to_dict().get("assignee"):
+        recipient = "assignee"
     
     if payload.get("user") != _task.to_dict().get("reporter"):
-        mail(f"{db_retrieve_user(_task.to_dict().get('reporter')).to_dict().get('email')}",
-             f"New Comment { payload.get('message')[:5] } ... by { db_retrieve_user(payload.get('user')).to_dict().get('name') }",
-             f"New Comment by { db_retrieve_user(payload.get('user')).to_dict().get('name') } Details: { payload.get('message') }")
+        recipient = "reporter"
 
+    if recipient:
+        mail(f"{db_retrieve_user(_task.to_dict().get( recipient )).to_dict().get('email')}",
+            f"New Comment { payload.get('message')[:5] } ... by { db_retrieve_user(payload.get('user')).to_dict().get('name') }",
+            f"New Comment by { db_retrieve_user(payload.get('user')).to_dict().get('name') } Details: { payload.get('message') }")
 
     return jsonify(data=comment.to_dict()), 201
 

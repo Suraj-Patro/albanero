@@ -14,6 +14,7 @@ class UsersModel:
     username: str = field(metadata={"validate": validate.Length(min=1, max=256)})
     name: str = field(metadata={"validate": validate.Length(min=1, max=256)})
     email: str = field(metadata={"validate": validate.Length(min=1, max=256)})
+    password: str = field(metadata={"validate": validate.Length(equal=88)})
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
 
