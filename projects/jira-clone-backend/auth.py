@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required
+from datetime import timedelta
 from model import UsersModel
 from db import db_create_user, db_retrieve_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -23,7 +24,9 @@ def login_post():
         # if user doesn't exist or password is wrong, reload the page
 
     # if the above check passes, then we know the user has the right credentials
-    login_user(user, remember=True)
+    login_user(user, remember=True,
+               duration=timedelta( days=0, seconds=0, microseconds=0,
+                                  milliseconds=0, minutes=30, hours=0, weeks=0) )
     return jsonify({"message": "user Login successful"}), 404
 
 
