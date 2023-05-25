@@ -1,4 +1,5 @@
 from flask import request, jsonify, Blueprint
+from flask_login import login_required, current_user
 from model import CommentsModel
 from db import db_retrieve_user, \
     db_retrieve_task, \
@@ -10,6 +11,7 @@ comments = Blueprint('comments', __name__)
 
 
 @comments.route("/create", methods=["POST"])
+@login_required
 def create_comment():
     """"
     Create a new comment
@@ -50,6 +52,7 @@ def create_comment():
 
 
 @comments.route("/", methods=["GET"])
+@login_required
 def list_comment():
     """"
     Retrieve all comments
@@ -60,6 +63,7 @@ def list_comment():
 
 
 @comments.route("/retrieve", methods=["GET"])
+@login_required
 def retrieve_comment():
     """"
     Retrieve a comment
@@ -72,6 +76,7 @@ def retrieve_comment():
 
 
 @comments.route("/update", methods=["POST"])
+@login_required
 def update_comment():
     """"
     Update a comment
@@ -79,6 +84,14 @@ def update_comment():
     payload = request.get_json()
     
     old_comment = db_retrieve_comment( payload.get("id") )
+    
+    if not old_comment:
+        return jsonify({"message": "comment not found"}), 404
+
+    if current_user.name != "admin":
+        if current_user.id != old_comment.to_dict.get("user"):
+            return jsonify({"message": "endpoint Access denied"}), 404
+    
     if old_comment:
         payload["user"] = old_comment.to_dict().get("user")
         payload["task"] = old_comment.to_dict().get("task")
@@ -99,11 +112,23 @@ def update_comment():
 
 
 @comments.route("/delete", methods=["DELETE"])
+@login_required
 def delete_comment():
     """"
     Delete a comment
     """
     comment_id = request.args.get("id")
+
+    old_comment = db_retrieve_comment( comment_id )
+    
+    if not old_comment:
+        return jsonify({"message": "comment not found"}), 404
+
+    if current_user.name != "admin":
+        if current_user.id != old_comment.to_dict.get("user"):
+            return jsonify({"message": "endpoint Access denied"}), 404
+    
+
     if not comment_id:
         return jsonify({"message": "comment id is required"}), 400
     success = db_delete_comment(comment_id)

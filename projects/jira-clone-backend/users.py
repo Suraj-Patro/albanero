@@ -1,4 +1,5 @@
 from flask import request, jsonify, Blueprint
+from flask_login import login_required, current_user
 from model import UsersModel
 from db import db_create_user, db_list_users, db_retrieve_user, db_update_user, db_delete_user, db_list_user_tasks
 from werkzeug.security import generate_password_hash
@@ -27,22 +28,31 @@ def create_user():
 
 
 @users.route("/", methods=["GET"])
+@login_required
 def list_user():
     """"
     Retrieve all users
     """
+    if current_user.name != "admin":
+        return jsonify({"message": "endpoint Access denied"}), 404
+    
     users = db_list_users()
     res = {"list": [user.to_dict() for user in users], "count": len(users)}
     return jsonify(data=res), 200
 
 
 @users.route("/tasks", methods=["GET"])
+@login_required
 def list_user_tasks():
     """"
     Retrieve a user's all tasks
     """
     user_id = request.args.get("id")
 
+    # if current_user.name != "admin":
+    #     if current_user.id != user_id:
+    #         return jsonify({"message": "endpoint Access denied"}), 404
+    
     user = db_retrieve_user(user_id)
     if not user:
         return jsonify({"message": "user not found"}), 404
@@ -53,11 +63,17 @@ def list_user_tasks():
 
 
 @users.route("/retrieve", methods=["GET"])
+@login_required
 def retrieve_user():
     """"
     Retrieve a user
     """
     user_id = request.args.get("id")
+
+    if current_user.name != "admin":
+        if current_user.id != user_id:
+            return jsonify({"message": "endpoint Access denied"}), 404
+        
     user = db_retrieve_user(user_id)
     if user:
         return jsonify(data=user.to_dict()), 200
@@ -65,11 +81,16 @@ def retrieve_user():
 
 
 @users.route("/update", methods=["POST"])
+@login_required
 def update_user():
     """"
     Update a user
     """
     payload = request.get_json()
+
+    if current_user.name != "admin":
+        if current_user.id != payload.get("id"):
+            return jsonify({"message": "endpoint Access denied"}), 404
     
     payload["password"] = generate_password_hash(payload.get("password", ""), method='sha256')
     
@@ -88,11 +109,17 @@ def update_user():
 
 
 @users.route("/delete", methods=["DELETE"])
+@login_required
 def delete_user():
     """"
     Delete a user
     """
     user_id = request.args.get("id")
+
+    if current_user.name != "admin":
+        if current_user.id != user_id:
+            return jsonify({"message": "endpoint Access denied"}), 404
+    
     if not user_id:
         return jsonify({"message": "user id is required"}), 400
     success = db_delete_user(user_id)

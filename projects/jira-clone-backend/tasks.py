@@ -1,4 +1,5 @@
 from flask import request, jsonify, Blueprint
+from flask_login import login_required, current_user
 from model import TasksModel
 from db import db_retrieve_user, \
 db_create_task, db_list_tasks, db_retrieve_task, db_update_task, db_delete_task, db_list_task_comments
@@ -9,6 +10,7 @@ tasks = Blueprint('tasks', __name__)
 
 
 @tasks.route("/create", methods=["POST"])
+@login_required
 def create_task():
     """"
     Create a new task
@@ -16,6 +18,10 @@ def create_task():
     payload = request.get_json()
     if "id" in payload:    # user cannot pass id when creating a new task
         payload.pop("id")
+
+    payload["reporter"] = current_user.id
+    payload["assignee"] = payload.get("assignee", current_user.id)
+
     status = TasksModel.Schema().validate(payload, partial=("id",))   # no validation to id
     if status:
         return jsonify(status), 400
@@ -38,6 +44,7 @@ def create_task():
 
 
 @tasks.route("/", methods=["GET"])
+@login_required
 def list_task():
     """"
     Retrieve all tasks
@@ -48,6 +55,7 @@ def list_task():
 
 
 @tasks.route("/comments", methods=["GET"])
+@login_required
 def list_task_comments():
     """"
     Retrieve a task's all comments
@@ -64,6 +72,7 @@ def list_task_comments():
 
 
 @tasks.route("/retrieve", methods=["GET"])
+@login_required
 def retrieve_task():
     """"
     Retrieve a task
@@ -76,6 +85,7 @@ def retrieve_task():
 
 
 @tasks.route("/update", methods=["POST"])
+@login_required
 def update_task():
     """"
     Update a task
@@ -83,6 +93,14 @@ def update_task():
     payload = request.get_json()
 
     old_task = db_retrieve_task( payload.get("id") )
+
+    if not old_task:
+        return jsonify({"message": "task not found"}), 404
+
+    if current_user.name != "admin":
+        if current_user.id not in [ old_task.to_dict().get("reporter"), old_task.to_dict().get("assignee")]:
+            return jsonify({"message": "endpoint Access denied"}), 404
+    
     if old_task:
         payload["reporter"] = old_task.to_dict().get("reporter")
     
@@ -107,11 +125,22 @@ def update_task():
 
 
 @tasks.route("/delete", methods=["DELETE"])
+@login_required
 def delete_task():
     """"
     Delete a task
     """
     task_id = request.args.get("id")
+
+    task = db_retrieve_task(task_id)
+    
+    if not task:
+        return jsonify({"message": "task not found"}), 404
+
+    if current_user.name != "admin":
+        if current_user.id != task.to_dict().get("reporter"):
+            return jsonify({"message": "endpoint Access denied"}), 404
+    
     if not task_id:
         return jsonify({"message": "task id is required"}), 400
     success = db_delete_task(task_id)
