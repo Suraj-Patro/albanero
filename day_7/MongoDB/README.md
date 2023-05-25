@@ -38,3 +38,21 @@ Collections and databases are created
 Aggregation Pipeline
 https://www.mongodb.com/basics#aggregation-pipelines
 https://www.mongodb.com/basics/aggregation-pipeline
+
+
+https://www.mongodb.com/community/forums/t/memory-allocated-per-connection/12526
+
+https://www.mongodb.com/blog/post/mongodb-atlas-best-practices-part-1
+https://www.mongodb.com/blog/post/mongodb-atlas-best-practices-part-2
+https://www.mongodb.com/blog/post/mongodb-atlas-best-practices-part-3
+https://www.mongodb.com/blog/post/mongodb-atlas-best-practices-part-4
+
+https://www.mongodb.com/blog
+
+
+https://stackoverflow.com/questions/30715836/architecture-multiple-mongo-databasesconnections-vs-multiple-collections-with
+
+https://stackoverflow.com/questions/16916903/mongodb-performance-having-multiple-databases
+
+https://groups.google.com/g/mongodb-user/c/UBkJKoeM6Tw
+
