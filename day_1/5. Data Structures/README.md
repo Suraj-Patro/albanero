@@ -149,8 +149,13 @@ swap
 a, b = b, a
 
 
-Set
----
+<!-- a hash value with hash function, salt, hashval -->
+pwhash = "sha256$Tx4PMsCE5jYb2i8Z$078a67c444b9539af2236ced7eb49379da7bbdd3a8e69ab661c88b16628940d1"
+method, salt, hashval = pwhash.split("$", 2)
+
+
+# Set
+-----
 set()
 {1}
 
