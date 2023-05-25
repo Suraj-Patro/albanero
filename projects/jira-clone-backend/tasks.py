@@ -93,9 +93,6 @@ def update_task():
     if not db_retrieve_task(task_id):
         return jsonify({"message": "task not found"}), 404
 
-    task_db = db_retrieve_task(task_id)
-    old_task = task_db.to_dict()
-
     success = db_update_task(task_id, payload)
     if not success:
         return jsonify({"message": "task Update failed"}), 404
