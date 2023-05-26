@@ -19,3 +19,12 @@ class User(JSONSerializable):
     )
     height_value: Optional[int] = Field(None, title='The height in cm', ge=50, le=300)
 
+
+try:
+    User(id_value=10, height_value=10)
+except Exception as e:
+    print(e)
+    print(type(e))
+    print(type(e).__name__)
+    print(e.args)
+    print(e.with_traceback)
