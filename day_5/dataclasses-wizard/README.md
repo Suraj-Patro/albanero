@@ -1,3 +1,9 @@
+IMP:
+
+https://dataclass-wizard.readthedocs.io/en/latest/common_use_cases/serialization_options.html#exclude-fields
+
+
+
 set of simple
     elegant wizarding tools for interacting with the Python dataclasses module
     fast serialization framework
