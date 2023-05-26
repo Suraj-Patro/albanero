@@ -32,7 +32,7 @@ data validation
 skiping some fields from being serialised due to
     sensitive
     or too huge
-
+    done using exclude parameter in pydantic field
     can be done by first doing to_dict()
     then removing ( del ) the desired fields
     and then doing json dumps
@@ -65,3 +65,7 @@ pydantic.dataclasses.dataclass
 flask error handler
 
 https://flask.palletsprojects.com/en/2.3.x/errorhandling/
+
+
+https://dataclass-wizard.readthedocs.io/en/latest/common_use_cases/serialization_options.html#exclude-fields
+

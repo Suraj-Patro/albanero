@@ -3,9 +3,16 @@ from model import TasksModel
 from db import db_retrieve_user, \
 db_create_task, db_list_tasks, db_retrieve_task, db_update_task, db_delete_task, db_list_task_comments
 from util import mail
+from pydantic.error_wrappers import ValidationError
 
 
 tasks = Blueprint('tasks', __name__)
+
+
+@tasks.errorhandler(ValidationError)
+def handle_bad_request(e):
+    msg = " ".join( [ f"Provide proper data for {getattr( e.model, error['loc'][0] ).title}, {error['msg']}." for error in e.errors() ] )
+    return jsonify({"message": msg, "success": False}), 400
 
 
 @tasks.route("/create", methods=["POST"])
@@ -16,9 +23,6 @@ def create_task():
     payload = request.get_json()
     if "id" in payload:    # user cannot pass id when creating a new task
         payload.pop("id")
-    status = TasksModel.Schema().validate(payload, partial=("id",))   # no validation to id
-    if status:
-        return jsonify(status), 400
     
     if not db_retrieve_user( payload.get("reporter") ):
         return jsonify({"message": "reporter user not found"}), 404
@@ -58,8 +62,8 @@ def list_task_comments():
     if not task:
         return jsonify({"message": "task not found"}), 404
 
-    tasks = db_list_task_comments(task_id)
-    res = {"list": [task.to_dict() for task in tasks], "count": len(tasks)}
+    comments = db_list_task_comments(task_id)
+    res = {"list": [comment.to_dict() for comment in comments], "count": len(comments)}
     return jsonify(data=res), 200
 
 
@@ -85,10 +89,7 @@ def update_task():
     old_task = db_retrieve_task( payload.get("id") )
     if old_task:
         payload["reporter"] = old_task.to_dict().get("reporter")
-    
-    status = TasksModel.Schema().validate(payload)
-    if status:
-        return jsonify(status), 400
+
     task_id = payload.get("id")
     if not db_retrieve_task(task_id):
         return jsonify({"message": "task not found"}), 404

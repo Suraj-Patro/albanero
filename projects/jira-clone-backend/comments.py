@@ -4,9 +4,16 @@ from db import db_retrieve_user, \
     db_retrieve_task, \
 db_create_comment, db_list_comments, db_retrieve_comment, db_update_comment, db_delete_comment
 from util import mail
+from pydantic.error_wrappers import ValidationError
 
 
 comments = Blueprint('comments', __name__)
+
+
+@comments.errorhandler(ValidationError)
+def handle_bad_request(e):
+    msg = " ".join( [ f"Provide proper data for {getattr( e.model, error['loc'][0] ).title}, {error['msg']}." for error in e.errors() ] )
+    return jsonify({"message": msg, "success": False}), 400
 
 
 @comments.route("/create", methods=["POST"])
@@ -17,9 +24,6 @@ def create_comment():
     payload = request.get_json()
     if "id" in payload:    # user cannot pass id when creating a new comment
         payload.pop("id")
-    status = CommentsModel.Schema().validate(payload, partial=("id",))   # no validation to id
-    if status:
-        return jsonify(status), 400
     
     if not db_retrieve_user( payload.get("user") ):
         return jsonify({"message": "user not found"}), 404
@@ -83,9 +87,6 @@ def update_comment():
         payload["user"] = old_comment.to_dict().get("user")
         payload["task"] = old_comment.to_dict().get("task")
     
-    status = CommentsModel.Schema().validate(payload)
-    if status:
-        return jsonify(status), 400
     comment_id = payload.get("id")
     if not db_retrieve_comment(comment_id):
         return jsonify({"message": "comment not found"}), 404

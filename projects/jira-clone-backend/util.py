@@ -4,15 +4,16 @@ from email.mime.text import MIMEText
 
 
 def mail(receiver_address, subject, mail_content):
-    # # For Sender in GSuite 
+    # # For Sender in GSuite email
+    # the below code will vary according to the mailer
     
     # # The mail addresses and password
     sender_address = 'no-reply@albanero.io'
-    # # App Password
 
+    # # App Password
     # sender_pass = 'xxxxxxxx'
 
-    # #Setup the MIME
+    # # Setup the MIME
     # message = MIMEMultipart()
     # message['From'] = sender_address
     # message['To'] = receiver_address

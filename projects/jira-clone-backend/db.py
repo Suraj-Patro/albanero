@@ -12,7 +12,7 @@ CComments = Db['comments']
 
 # Users
 def db_create_user(user: UsersModel) -> bool:
-    CUsers.insert_one(user.__dict__)
+    CUsers.insert_one(user.to_dict())
 
 
 def db_update_user(user_id: str, user: Dict[str, Any]) -> bool:
@@ -40,7 +40,7 @@ def db_delete_user(user_id: str) -> bool:
 
 # Tasks
 def db_create_task(task: TasksModel) -> bool:
-    CTasks.insert_one(task.__dict__)
+    CTasks.insert_one(task.to_dict())
 
 
 def db_update_task(task_id: str, task: Dict[str, Any]) -> bool:
@@ -68,7 +68,7 @@ def db_delete_task(task_id: str) -> bool:
 
 # Comments
 def db_create_comment(comment: CommentsModel) -> bool:
-    CComments.insert_one(comment.__dict__)
+    CComments.insert_one(comment.to_dict())
 
 
 def db_update_comment(comment_id: str, comment: Dict[str, Any]) -> bool:
