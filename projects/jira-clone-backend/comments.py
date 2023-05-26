@@ -12,7 +12,7 @@ comments = Blueprint('comments', __name__)
 
 @comments.errorhandler(ValidationError)
 def handle_bad_request(e):
-    msg = " ".join( [ f"Provide proper data for {getattr( e.model, error['loc'][0] ).title}, {error['msg']}." for error in e.errors() ] )
+    msg = "\n".join( [ f"Provide proper data for {getattr( e.model, error['loc'][0] ).title}, {error['msg']}." for error in e.errors() ] )
     return jsonify({"message": msg, "success": False}), 400
 
 
