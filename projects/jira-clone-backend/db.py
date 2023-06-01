@@ -1,9 +1,10 @@
+import os
 import pymongo
 from model import *
 from typing import List, Dict, Any
 
 
-client = pymongo.MongoClient("mongodb://localhost:27017/")
+client = pymongo.MongoClient( os.getenv("MONGO_CONN_STR", default="mongodb://localhost:27017/") )
 Db = client["jira"]
 CUsers = Db['users']
 CTasks = Db['tasks']

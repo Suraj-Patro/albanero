@@ -12,7 +12,7 @@ class UsersModel(JSONSerializable):
     name: str = Field( title="Name", min_length=3, max_length=256 )
     email: str = Field( min_length=1, max_length=256 )
     password: str = Field( min_length=88, max_length=88 )
-    id: str = Field(default=str(uuid.uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
 
 @dataclass
@@ -21,7 +21,7 @@ class TasksModel(JSONSerializable):
     description: str = Field( min_length=1, max_length=256 )
     reporter: str = Field( min_length=36, max_length=36 )
     assignee: str = Field( min_length=36, max_length=36 )
-    id: str = Field(default=str(uuid.uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
 
 @dataclass
@@ -29,4 +29,4 @@ class CommentsModel(JSONSerializable):
     message: str = Field( min_length=1, max_length=256 )
     task: str = Field( min_length=36, max_length=36 )
     user: str = Field( min_length=36, max_length=36 )
-    id: str = Field(default=str(uuid.uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))

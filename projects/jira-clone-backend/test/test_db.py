@@ -1,3 +1,4 @@
+import os
 import unittest
 
 
@@ -5,11 +6,11 @@ class DBTestCase(unittest.TestCase):
     def setUp(self):
         import pymongo
 
-        self._client = pymongo.MongoClient("mongodb://localhost:27017/")
-        self._db = "jira"
-        self._cU = "users"
-        self._cT = "tasks"
-        self._cC = "comments"
+        self._client = pymongo.MongoClient( os.getenv("MONGO_CONN_STR", default="mongodb://localhost:27017/") )
+        self._db = os.getenv("MONGO_DB_NAME", default="jira")
+        self._cU = os.getenv("MONGO_USERS_COLL_NAME", default="users")
+        self._cT = os.getenv("MONGO_TASKS_COLL_NAME", default="tasks")
+        self._cC = os.getenv("MONGO_COMMENTS_COLL_NAME", default="comments")
 
     
     def test_list_databases(self):
