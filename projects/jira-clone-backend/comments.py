@@ -1,4 +1,4 @@
-from flask import request, jsonify, Blueprint
+from quart import request, jsonify, Blueprint
 from model import CommentsModel
 from db import db_retrieve_user, \
     db_retrieve_task, \
@@ -11,31 +11,31 @@ comments = Blueprint('comments', __name__)
 
 
 @comments.errorhandler(ValidationError)
-def handle_bad_request(e):
+async def handle_bad_request(e):
     msg = "\n".join( [ f"Provide proper data for {getattr( e.model, error['loc'][0] ).title}, {error['msg']}." for error in e.errors() ] )
     return jsonify({"message": msg, "success": False}), 400
 
 
 @comments.route("/create", methods=["POST"])
-def create_comment():
+async def create_comment():
     """"
     Create a new comment
     """
-    payload = request.get_json()
+    payload = await request.get_json()
     if "id" in payload:    # user cannot pass id when creating a new comment
         payload.pop("id")
     
-    if not db_retrieve_user( payload.get("user") ):
+    if not await db_retrieve_user( payload.get("user") ):
         return jsonify({"message": "user not found"}), 404
     
-    if not db_retrieve_task( payload.get("task") ):
+    if not await db_retrieve_task( payload.get("task") ):
         return jsonify({"message": "task not found"}), 404
     
     comment = CommentsModel.from_dict(payload)
-    db_create_comment(comment)
+    await db_create_comment(comment)
 
 
-    _task = db_retrieve_task( payload.get("task") )
+    _task = await db_retrieve_task( payload.get("task") )
     
     recipient = ""
 
@@ -46,68 +46,68 @@ def create_comment():
         recipient = "reporter"
 
     if recipient:
-        mail(f"{db_retrieve_user(_task.to_dict().get( recipient )).to_dict().get('email')}",
-            f"New Comment { payload.get('message')[:5] } ... by { db_retrieve_user(payload.get('user')).to_dict().get('name') }",
-            f"New Comment by { db_retrieve_user(payload.get('user')).to_dict().get('name') } Details: { payload.get('message') }")
+        await mail(f"{await db_retrieve_user(_task.to_dict().get( recipient )).to_dict().get('email')}",
+            f"New Comment { payload.get('message')[:5] } ... by { await db_retrieve_user(payload.get('user')).to_dict().get('name') }",
+            f"New Comment by { await db_retrieve_user(payload.get('user')).to_dict().get('name') } Details: { payload.get('message') }")
 
     return jsonify(data=comment.to_dict()), 201
 
 
 @comments.route("/", methods=["GET"])
-def list_comment():
+async def list_comment():
     """"
     Retrieve all comments
     """
-    comments = db_list_comments()
+    comments = await db_list_comments()
     res = {"list": [comment.to_dict() for comment in comments], "count": len(comments)}
     return jsonify(data=res), 200
 
 
 @comments.route("/retrieve", methods=["GET"])
-def retrieve_comment():
+async def retrieve_comment():
     """"
     Retrieve a comment
     """
     comment_id = request.args.get("id")
-    comment = db_retrieve_comment(comment_id)
+    comment = await db_retrieve_comment(comment_id)
     if comment:
         return jsonify(data=comment.to_dict()), 200
     return jsonify({"message": "comment not found"}), 404
 
 
 @comments.route("/update", methods=["POST"])
-def update_comment():
+async def update_comment():
     """"
     Update a comment
     """
-    payload = request.get_json()
+    payload = await request.get_json()
     
-    old_comment = db_retrieve_comment( payload.get("id") )
+    old_comment = await db_retrieve_comment( payload.get("id") )
     if old_comment:
         payload["user"] = old_comment.to_dict().get("user")
         payload["task"] = old_comment.to_dict().get("task")
     
     comment_id = payload.get("id")
-    if not db_retrieve_comment(comment_id):
+    if not await db_retrieve_comment(comment_id):
         return jsonify({"message": "comment not found"}), 404
 
-    success = db_update_comment(comment_id, payload)
+    success = await db_update_comment(comment_id, payload)
     if not success:
         return jsonify({"message": "comment Update failed"}), 404
-    comment_db = db_retrieve_comment(comment_id)
+    comment_db = await db_retrieve_comment(comment_id)
 
     return jsonify(data=comment_db.to_dict()), 200
 
 
 @comments.route("/delete", methods=["DELETE"])
-def delete_comment():
+async def delete_comment():
     """"
     Delete a comment
     """
     comment_id = request.args.get("id")
     if not comment_id:
         return jsonify({"message": "comment id is required"}), 400
-    success = db_delete_comment(comment_id)
+    success = await db_delete_comment(comment_id)
     if not success:
         return jsonify({"message": "comment Delete failed"}), 404
     return jsonify({"message": "comment Deleted"}), 200

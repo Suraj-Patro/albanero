@@ -1,8 +1,10 @@
-from flask import Flask
+# from flask import Flask
+from quart import Quart
 
 
 def create_app():
-    app = Flask(__name__)
+    # app = Flask(__name__)
+    app = Quart(__name__)
 
     # blueprint for users routes
     from users import users as users_bp

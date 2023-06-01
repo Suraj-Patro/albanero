@@ -3,7 +3,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-def mail(receiver_address, subject, mail_content):
+async def mail(receiver_address, subject, mail_content):
     # # For Sender in GSuite email
     # the below code will vary according to the mailer
     
