@@ -7,7 +7,7 @@ from pprint import pprint
 
 
 class FileStreamer:
-    BUFFER_SIZE = 1024 * 2     # in KB
+    BUFFER_SIZE = 1024 * 102     # in KB
     BUFFER_LINES = 2
 
 
@@ -84,12 +84,16 @@ class FileStreamer:
     def read_buffer(self):
         # print("inside read buffer")
 
-        self.load_buffer()
+        if self.should_load_buffer():
+            self.load_buffer()
+        
         return self.buffer
 
 
-    def write_buffer(self, buffer):
-        self.buffer = buffer
+    def write_buffer(self, idx):
+        self.buffer = self.buffer[idx:]
+        _, count = self.regexLines.subn("", self.buffer)
+        return count
 
 
     def file_read_complete(self):
@@ -102,10 +106,11 @@ class FileStreamer:
 
 
 class CSVInspector(FileStreamer):
-    def __init__(self, file_path, allow_buffer_overflow = False, sep = ',', quote = '"', hasHeaders = True, comment = "#"):
+    def __init__(self, file_path, allow_buffer_overflow = False, sep = ',', quote = '"', quoteEscChar = "\\", hasHeaders = True, comment = "#"):
         super().__init__(file_path, allow_buffer_overflow)
         self.sep = sep
         self.quote = quote
+        self.quoteEscChar = quoteEscChar
         self.hasHeaders = hasHeaders
         self.comment = comment
 
@@ -119,13 +124,14 @@ class CSVInspector(FileStreamer):
 
         self.regexLines = re.compile(f'(({quote}(?:[^{quote}]|)+{quote}|[^{quote}\n\r]+)+)', re.MULTILINE)
 
+        self.regexNewLines = re.compile(rf'.+', re.MULTILINE)
+
         self.regexItems = re.compile(f'{sep}(?=(?:[^{quote}]*{quote}[^{quote}]*{quote})*[^{quote}]*$)')
 
         self.headers = []
+        self.prev_rows = []
         self.firstLine = hasHeaders
         self.headersLen = 0
-
-
 
 
     def unquote(self, cell):
@@ -167,114 +173,155 @@ class CSVInspector(FileStreamer):
         return result
 
 
-    # considered the headers are able to parse correctly and that they are correct
+    def data_writer(self, s):
+        if not log:
+            return 
+        
+        with open(log, "a") as f:
+            # f.write(",".join(currRow))
+            # f.write(",".join([str(i) for i in currRow]))
+            # f.write("\n")
+
+            # f.write(str(s))
+            # f.write("\n")
+            
+            writer = csv.writer(f)
+            writer.writerow(s)
+
+    
+    def parseItems(self, line):
+        items = self.regexItems.split(line)
+        return items
+
+
     def parseLine(self):
         text = self.read_buffer()
-
-        # print("inside parseline:\n" + text)
 
         match = self.regexLines.search( text )
 
         if match:
-            currRawLine = match.group()
+            line = match.group()            
+            line = line.replace("\r", "")
 
-            newText = text[match.end():]
+            return line, match.end()
+        
+        return "", 0
 
-            self.write_buffer( newText )
 
-            # count here is plausible  count of line match
-            _, count = self.regexLines.subn("", newText) 
+    def parseNewLine(self):
+        text = self.read_buffer()
+
+        match = self.regexNewLines.search( text )
+
+        if match:
+            line = match.group()            
+            line = line.replace("\r", "")
+
+            return line, match.end()
+        
+        return "", 0
+
+
+    # considered the headers are able to parse correctly and that they are correct
+    def parseText(self):
+        line, idx = self.parseLine()
+        nline, nidx = self.parseNewLine()
+
+        # print(line, idx)
+        # print(nline, nidx)
+
+        # i = input()
+        i = "0"
+
+        if i == "0":
+            rawLine = line
+            rawIdx = idx
+        else:
+            rawLine = nline
+            rawIdx = nidx
+
+        if not rawLine:
+            return [], 0
+        
+        if self.isComment(rawLine, self.skip, self.comment):
+            return [], 0
+
+        if self.firstLine:
+            items = self.parseItems(rawLine)
+            for item in items:
+                cell = {"text": item}
+                self.headers.append(self.unquote(cell))
             
-            line = currRawLine.replace("\r", "")
-            # if i == 0 and self.isSep(line, self.sep, self.regexItems):
-            #     continue
+            self.headersLen = len(self.headers)
+            self.firstLine = False
+            count = self.write_buffer(rawIdx)
+            self.data_writer(self.headers)
+            return self.headers, count
+        
+        else:
+            row = []
+            items = self.parseItems(rawLine)
+            for item in items:
+                cell = {"text": item, "quoted": False}
+                value = self.unquote(cell)
+                row.append(value)
 
-            if not self.isComment(line, self.skip, self.comment):
-                items = self.regexItems.split(line)
+            count = self.write_buffer(rawIdx)
 
-                    # if len(items) > maxLength:
-                    #     maxLength = len(items)
-
-                if self.firstLine:
-                    for item in items:
-                        cell = {"text": item}
-                        self.headers.append(self.unquote(cell))
-                
-                    self.headersLen = len(self.headers)
-                    self.firstLine = False
-
-                    with open(log, "a") as f:
-                        # f.write(",".join(self.headers))
-                        # f.write("\n")
-
-                        # f.write(str(self.headers))
-                        # f.write("\n")
-
-                        writer = csv.writer(f)
-                        writer.writerow(self.headers)
-
-                    return self.headers, count
-
+            if len(rawLine) > 0 or ( not self.file_read_complete or count ):
+                if len(row) == self.headersLen:
+                    # self.data_writer(row)
+                    pass
                 else:
-                    obj = []
-                    for item in items:
-                        cell = {"text": item, "quoted": False}
-                        value = self.unquote(cell)
-                        obj.append(value)
+                    pass
 
-                    # if len(line) > 0 or (i < len(lines) - 1):
-                    # if there's a blank line inbetween data then check if lines are present after it or not
-                    if len(line) > 0 or ( not self.file_read_complete or count ):
-                        if len(obj) == self.headersLen:
 
-                            with open(log, "a") as f:
-                                # f.write(",".join(obj))
-                                # f.write(",".join([str(i) for i in obj]))
-                                # f.write("\n")
-
-                                # f.write(str(obj))
-                                # f.write("\n")
-                                
-                                writer = csv.writer(f)
-                                writer.writerow(obj)
-
-                                pass
-
-                    return obj, count
-        return [], 0
+            self.data_writer(row)
+                
+            return row, count
 
 
     def parse(self):
         while True:
-            row, count = self.parseLine()
+            row, count = self.parseText()
             
+            # print(row, self.file_read_complete(), count, "\n")
             print(row, self.file_read_complete(), count)
             
+            # input()
             if not ( row or ( not self.file_read_complete() or count ) ):
                 break
 
 
-
-
-
-file_path = 'z_data_1.csv'
-# file_path = 'inspect-multiline.csv'
-# file_path = 'ItemMaster_MMS001.csv'
-# file_path = 'z_data_4.csv'
-
 global log
-
-# log = "data.txt"
-log = "test.csv"
-# log = "data.csv"
-
-# print(f'File Size is {os.stat(file_path).st_size / (1024 * 1024)} MB')
+log = None
 
 
-c = CSVInspector(file_path, sep='\t')
+files = [
+    # 'zz_abdul_inspect-multiline.csv',
+    # 'zz_keshab_ItemMaster_MMS001.csv',
+    # 'zz_shan_icsp_sample_2.csv',
+    'zz_shan_peoplec.csv',
+    # 'zz_shan_sample_csv_with_multiline_records.csv',
+    # 'zz_shan_sample_csv_with_multiline_records.csv',
+]
 
-c.parse()
 
+for f in files:
+    print(f"Working on {f}.")
+    
+    log = f"{f}_"
+
+    try:
+        os.remove(log)
+        input()
+    except:
+        pass
+
+    input()
+    c = CSVInspector(f)
+
+    c.parse()
 
 
 
